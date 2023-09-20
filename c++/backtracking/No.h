@@ -3,6 +3,10 @@
 
 class No {
 public:
+
+    No(){}
+    ~No(){}
+
     No* pai = NULL;
     std::stack<char> pilha;
     int i, j;

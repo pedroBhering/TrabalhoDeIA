@@ -46,14 +46,13 @@ void regrasPossiveis(char** mat, char* vet, int n, int line , int col, No* p){
 
 No* R(char** mat, int* i, int* j, int* caracteresInseridos, No* p, int n){
     
-    No* q = new No();
+    No* q = NULL;
 
     if(p->pilha.size() == 0){
 
         *caracteresInseridos = *caracteresInseridos - 1;
         mat[p->getPai()->i][p->getPai()->j] = '1';  
         q = p->getPai();
-
         if(*i == 0){
             *i = n - 2;
             *j = *j - 2;
@@ -61,15 +60,16 @@ No* R(char** mat, int* i, int* j, int* caracteresInseridos, No* p, int n){
 
         else
             *i = *i - 2;
-
         //cout << "\nVoltou para o pai" << endl;
+        delete p;
     }
 
     else{
         mat[*i][*j] = p->desempilhar();
         p->i = *i;
         p->j = *j;
-         *caracteresInseridos = *caracteresInseridos + 1;
+        *caracteresInseridos = *caracteresInseridos + 1;
+        q = new No();
         q->setPai(p);
         //cout << "\nInseriu: " << mat[*i][*j] << endl; 
     }
@@ -95,14 +95,12 @@ void algoritmoBacktracking(char ** mat, char* vet, int n){
     No* p = new No(); 
     
     while(caracteresInseridos < n * n){
-
         if(p->pilha.size() == 0 && p->visit == false){
             regrasPossiveis(mat, vet, n, line, col, p);
         }
 
         p->visit = true;
         p = R(mat, &line, &col, &caracteresInseridos, p, n);
-
 
         if(line < n)
             line++;
@@ -141,7 +139,7 @@ void preencheVetAleatorio(char* vet, int n){
         int number = getRandomNumber(0, n);
         while(!verificaNum(vet, n, 'a' + number))
             number = getRandomNumber(0, n);
-        vet[i] = 'a' + number;
+        vet[(n-1) - i] = 'a' + number;
     }
 }
 
@@ -161,9 +159,8 @@ int main(){
             mat[i][j] = '1';
         
     char *vet = new char[n];
-    char *caminhoSol = new char[n];
     preencheVet(vet, n);
-    // preencheVetAleatorio(vet, n);
+    //preencheVetAleatorio(vet, n);
 
     algoritmoBacktracking(mat, vet, n);
 
