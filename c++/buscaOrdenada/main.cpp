@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <set>
+#include<tuple>
 
 using namespace std;
 
@@ -10,14 +11,15 @@ private:
 public:
     int** mat;
     Node* parent;
-    vector<int> actions;
+    vector<tuple<int, int>> actions;
     int i; int j;
     int n;
-    Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n);
+    int w;
+    Node(int** mat,Node* parent,vector<tuple<int, int>> actions, int i, int j, int n);
     ~Node();
 };
 
-Node::Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n)
+Node::Node(int** mat,Node* parent,vector<tuple<int, int>> actions, int i, int j, int n)
 {   
     this->n = n;
     this->mat = mat;
@@ -32,7 +34,6 @@ Node::~Node()
     for (int i = 0; i < n; i++) {
         delete[] mat[i];
     }
-
     delete [] mat;
     delete parent;
 }
@@ -48,6 +49,16 @@ public:
     Node* pop();
     Node* popQueue();
     bool is_empty();
+    int size(){return stack.size();};
+    void swap(int pos){
+        Node* aux = stack[0];
+        stack[0] = stack[pos];
+        stack[pos] = aux;
+    }
+
+    Node* get(int i){
+        return stack[i];
+    }
     // bool contains_matrix(int **matrix_ext);
 };
 
@@ -97,14 +108,14 @@ void imprimeMatriz(int **matriz, int n){
     }
 }
 
-vector<int> preenche_regras(int** matriz, int n, int i, int j){
+vector<tuple<int, int>> preenche_regras(int** matriz, int n, int i, int j, int *qtdMatrizNivel){
+    // cout << "entrou" << endl;
     if(i < n-1)
         i++;
     else{
         i = 0; j++;
     }
-
-    vector<int> rules;
+    vector<tuple<int, int>> rules;
 
     for(int r = 1; r < n+1; r++){
         bool flag = true;
@@ -126,7 +137,15 @@ vector<int> preenche_regras(int** matriz, int n, int i, int j){
         }
 
         if(flag){
-            rules.push_back(r);
+            int nivel = j * n + i - n;
+            qtdMatrizNivel[nivel] += 1;
+            // cout << "Nivel: " << nivel+n << endl;
+            // cout << qtdMatrizNivel[nivel] << endl;
+            tuple<int, int> reg = make_tuple(r, qtdMatrizNivel[nivel]);
+            // cout << "r = "<<get<0>(reg) << endl;
+            // cout << "peso = " << get<1>(reg) << endl;
+            rules.push_back(reg);
+            // cout << "passou" << endl;
         }
     }
 
@@ -150,8 +169,13 @@ void bfs_and_dfs(int **matriz, int n){
     int i = n-1; int j = 0;
     Stack* stack = new Stack();
     set<int**> explored;
-    Node *no = new Node(matriz, nullptr, preenche_regras(matriz, n, i, j), i, j, n);
 
+    int *qtdMatrizNivel = new int[n];
+    
+    for(int k = 0; k < n * (n-1); k++)
+        qtdMatrizNivel[k] = 0;
+
+    Node *no = new Node(matriz, nullptr, preenche_regras(matriz, n, i, j, qtdMatrizNivel), i, j, n);
     stack->push(no);
     
     while(true){
@@ -160,8 +184,22 @@ void bfs_and_dfs(int **matriz, int n){
             exit(1);
         }
 
-        no = stack->pop();
 
+        if(no->actions.size() != 0){
+        int menor = get<1>(no->actions[0]);
+        int pos = 0;
+        for(int k = 0; k < stack->size(); k++){
+            if(stack->get(k)->actions.size()!= 0)
+                if(menor > get<1>(stack->get(k)->actions[0])){
+                    menor = get<1>(stack->get(k)->actions[0]);
+                    pos = k;
+                }
+        }
+        stack->swap(pos);
+        }
+        
+        no = stack->popQueue();
+        cout << "nivel = " << no->i + no->j*n<< endl;
         // imprimeMatriz(no->mat, n);
 
         //Encontrou solução
@@ -177,21 +215,21 @@ void bfs_and_dfs(int **matriz, int n){
             int **matriz_aux = clona_matriz(no->mat, n);
 
             if(no->i < n-1)
-                matriz_aux[no->i+1][no->j] = no->actions[k];
+                matriz_aux[no->i+1][no->j] = get<0>(no->actions[k]);
             else
-                matriz_aux[0][no->j+1] = no->actions[k];
+                matriz_aux[0][no->j+1] = get<0>(no->actions[k]);
 
             if(explored.count(matriz_aux) == 0){
                 Node *new_no;
                 if (no->i < n - 1)
-                {
-                    vector<int> new_actions = preenche_regras(matriz_aux, n, no->i + 1, no->j);
-                    new_no = new Node(matriz_aux, no, new_actions, no->i + 1, no->j,n);
+                {   
+                    vector<tuple<int, int>> new_actions = preenche_regras(matriz_aux, n, no->i + 1, no->j, qtdMatrizNivel);
+                    new_no = new Node(matriz_aux, no, new_actions, no->i + 1, no->j, n);
                 }
                 else
                 {
-                    vector<int> new_actions = preenche_regras(matriz_aux, n, 0, no->j + 1);
-                    new_no = new Node(matriz_aux, no, new_actions, 0, no->j + 1,n);
+                    vector<tuple<int, int>> new_actions = preenche_regras(matriz_aux, n, 0, no->j + 1, qtdMatrizNivel);
+                    new_no = new Node(matriz_aux, no, new_actions, 0, no->j + 1, n);
                 }
 
                 stack->push(new_no);
