@@ -118,7 +118,7 @@ void imprimeMatriz(int **matriz, int n){
     }
 }
 
-vector<int> preenche_regras(int** matriz, int n, int i, int j, int *qtdMatrizNivel){
+vector<int> preenche_regras(int** matriz, int n, int i, int j){
     // cout << "entrou" << endl;
     if(i < n-1)
         i++;
@@ -172,12 +172,12 @@ void bfs_and_dfs(int **matriz, int n){
     Stack* stack = new Stack();
     set<int**> explored;
 
-    int *qtdMatrizNivel = new int[n];
+    int *qtdMatrizNivel = new int[n*(n-1)];
     
     for(int k = 0; k < n * (n-1); k++)
         qtdMatrizNivel[k] = 0;
 
-    Node *no = new Node(matriz, nullptr, preenche_regras(matriz, n, i, j, qtdMatrizNivel), i, j, n, 0);
+    Node *no = new Node(matriz, nullptr, preenche_regras(matriz, n, i, j), i, j, n, 0);
     stack->push(no);
     
     while(true){
@@ -186,14 +186,14 @@ void bfs_and_dfs(int **matriz, int n){
             exit(1);
         }
 
-        cout << "Antes" << endl;
-        stack->imprimeAbertos();
+        // cout << "Antes" << endl;
+        // stack->imprimeAbertos();
 
         if(stack->size() != 0){
         int menor = stack->get(0)->w;
-        cout << "menor: " << menor << endl;
-        cout << "ImprimeMatriz do menor: " << endl;
-        imprimeMatriz(stack->get(0)->mat, n);
+        // cout << "menor: " << menor << endl;
+        // cout << "ImprimeMatriz do menor: " << endl;
+        // imprimeMatriz(stack->get(0)->mat, n);
         int pos = 0;
         for(int k = 1; k < stack->size(); k++){
             if(menor > stack->get(k)->w){
@@ -203,12 +203,12 @@ void bfs_and_dfs(int **matriz, int n){
                 }
             }
             stack->swap(pos);
-            cout << "menor: " << menor << endl;
-            cout << "ImprimeMatriz Novo menor: " << endl;
-            imprimeMatriz(stack->get(0)->mat, n);
+            // cout << "menor: " << menor << endl;
+            // cout << "ImprimeMatriz Novo menor: " << endl;
+            // imprimeMatriz(stack->get(0)->mat, n);
         }
-        cout << "Depois" << endl;
-        stack->imprimeAbertos();
+        // cout << "Depois" << endl;
+        // stack->imprimeAbertos();
         no = stack->popQueue();
         // cout << "nivel = " << no->i + no->j*n<< endl;
         // imprimeMatriz(no->mat, n);
@@ -235,14 +235,14 @@ void bfs_and_dfs(int **matriz, int n){
                 Node *new_no;
                 if (no->i < n - 1)
                 {   
-                    vector<int> new_actions = preenche_regras(matriz_aux, n, no->i + 1, no->j, qtdMatrizNivel);
+                    vector<int> new_actions = preenche_regras(matriz_aux, n, no->i + 1, no->j);
                     qtdMatrizNivel[no->j * n + (no->i + 1) - n] += 1;
                     new_no = new Node(matriz_aux, no, new_actions, no->i + 1, no->j, n, qtdMatrizNivel[no->j * n + (no->i + 1) - n]);
 
                 }
                 else
                 {
-                    vector<int> new_actions = preenche_regras(matriz_aux, n, 0, no->j + 1, qtdMatrizNivel);
+                    vector<int> new_actions = preenche_regras(matriz_aux, n, 0, no->j + 1);
                     qtdMatrizNivel[(no->j+1) * n - n] += 1;
                     new_no = new Node(matriz_aux, no, new_actions, 0, no->j + 1, n, qtdMatrizNivel[(no->j+1) * n - n]);
                 }
