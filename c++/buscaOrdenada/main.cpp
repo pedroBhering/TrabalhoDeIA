@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <set>
-#include<tuple>
 
 using namespace std;
 
@@ -11,15 +10,15 @@ private:
 public:
     int** mat;
     Node* parent;
-    vector<tuple<int, int>> actions;
+    vector<int> actions;
     int i; int j;
     int n;
     int w;
-    Node(int** mat,Node* parent,vector<tuple<int, int>> actions, int i, int j, int n);
+    Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n, int w);
     ~Node();
 };
 
-Node::Node(int** mat,Node* parent,vector<tuple<int, int>> actions, int i, int j, int n)
+Node::Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n, int w)
 {   
     this->n = n;
     this->mat = mat;
@@ -27,6 +26,7 @@ Node::Node(int** mat,Node* parent,vector<tuple<int, int>> actions, int i, int j,
     this->actions = actions;
     this->i = i;
     this->j = j;
+    this->w = w;
 }
 
 Node::~Node()
@@ -58,6 +58,16 @@ public:
 
     Node* get(int i){
         return stack[i];
+    }
+
+    void imprimeAbertos(){
+        for(int i = 0; i < stack.size(); i++){
+            for(int j = 0; j < stack[0]->n; j++){
+                for(int k = 0; k < stack[0]->n; k++)
+                    cout << stack[i]->mat[j][k] << " ";
+                cout << "\n";
+            }
+        }
     }
     // bool contains_matrix(int **matrix_ext);
 };
@@ -108,14 +118,14 @@ void imprimeMatriz(int **matriz, int n){
     }
 }
 
-vector<tuple<int, int>> preenche_regras(int** matriz, int n, int i, int j, int *qtdMatrizNivel){
+vector<int> preenche_regras(int** matriz, int n, int i, int j, int *qtdMatrizNivel){
     // cout << "entrou" << endl;
     if(i < n-1)
         i++;
     else{
         i = 0; j++;
     }
-    vector<tuple<int, int>> rules;
+    vector<int> rules;
 
     for(int r = 1; r < n+1; r++){
         bool flag = true;
@@ -137,15 +147,7 @@ vector<tuple<int, int>> preenche_regras(int** matriz, int n, int i, int j, int *
         }
 
         if(flag){
-            int nivel = j * n + i - n;
-            qtdMatrizNivel[nivel] += 1;
-            // cout << "Nivel: " << nivel+n << endl;
-            // cout << qtdMatrizNivel[nivel] << endl;
-            tuple<int, int> reg = make_tuple(r, qtdMatrizNivel[nivel]);
-            // cout << "r = "<<get<0>(reg) << endl;
-            // cout << "peso = " << get<1>(reg) << endl;
-            rules.push_back(reg);
-            // cout << "passou" << endl;
+            rules.push_back(r);
         }
     }
 
@@ -175,7 +177,7 @@ void bfs_and_dfs(int **matriz, int n){
     for(int k = 0; k < n * (n-1); k++)
         qtdMatrizNivel[k] = 0;
 
-    Node *no = new Node(matriz, nullptr, preenche_regras(matriz, n, i, j, qtdMatrizNivel), i, j, n);
+    Node *no = new Node(matriz, nullptr, preenche_regras(matriz, n, i, j, qtdMatrizNivel), i, j, n, 0);
     stack->push(no);
     
     while(true){
@@ -184,26 +186,36 @@ void bfs_and_dfs(int **matriz, int n){
             exit(1);
         }
 
+        cout << "Antes" << endl;
+        stack->imprimeAbertos();
 
-        if(no->actions.size() != 0){
-        int menor = get<1>(no->actions[0]);
+        if(stack->size() != 0){
+        int menor = stack->get(0)->w;
+        cout << "menor: " << menor << endl;
+        cout << "ImprimeMatriz do menor: " << endl;
+        imprimeMatriz(stack->get(0)->mat, n);
         int pos = 0;
-        for(int k = 0; k < stack->size(); k++){
-            if(stack->get(k)->actions.size()!= 0)
-                if(menor > get<1>(stack->get(k)->actions[0])){
-                    menor = get<1>(stack->get(k)->actions[0]);
-                    pos = k;
+        for(int k = 1; k < stack->size(); k++){
+            if(menor > stack->get(k)->w){
+                menor = stack->get(k)->w;
+                pos = k;
+
                 }
+            }
+            stack->swap(pos);
+            cout << "menor: " << menor << endl;
+            cout << "ImprimeMatriz Novo menor: " << endl;
+            imprimeMatriz(stack->get(0)->mat, n);
         }
-        stack->swap(pos);
-        }
-        
+        cout << "Depois" << endl;
+        stack->imprimeAbertos();
         no = stack->popQueue();
-        cout << "nivel = " << no->i + no->j*n<< endl;
+        // cout << "nivel = " << no->i + no->j*n<< endl;
         // imprimeMatriz(no->mat, n);
 
         //Encontrou solução
         if(no->i == n-1 && no->j == n-1){
+            cout << "Solucao: " <<endl;
             imprimeMatriz(no->mat, n);
             exit(0);
         }
@@ -215,21 +227,24 @@ void bfs_and_dfs(int **matriz, int n){
             int **matriz_aux = clona_matriz(no->mat, n);
 
             if(no->i < n-1)
-                matriz_aux[no->i+1][no->j] = get<0>(no->actions[k]);
+                matriz_aux[no->i+1][no->j] = no->actions[k];
             else
-                matriz_aux[0][no->j+1] = get<0>(no->actions[k]);
+                matriz_aux[0][no->j+1] = no->actions[k];
 
             if(explored.count(matriz_aux) == 0){
                 Node *new_no;
                 if (no->i < n - 1)
                 {   
-                    vector<tuple<int, int>> new_actions = preenche_regras(matriz_aux, n, no->i + 1, no->j, qtdMatrizNivel);
-                    new_no = new Node(matriz_aux, no, new_actions, no->i + 1, no->j, n);
+                    vector<int> new_actions = preenche_regras(matriz_aux, n, no->i + 1, no->j, qtdMatrizNivel);
+                    qtdMatrizNivel[no->j * n + (no->i + 1) - n] += 1;
+                    new_no = new Node(matriz_aux, no, new_actions, no->i + 1, no->j, n, qtdMatrizNivel[no->j * n + (no->i + 1) - n]);
+
                 }
                 else
                 {
-                    vector<tuple<int, int>> new_actions = preenche_regras(matriz_aux, n, 0, no->j + 1, qtdMatrizNivel);
-                    new_no = new Node(matriz_aux, no, new_actions, 0, no->j + 1, n);
+                    vector<int> new_actions = preenche_regras(matriz_aux, n, 0, no->j + 1, qtdMatrizNivel);
+                    qtdMatrizNivel[(no->j+1) * n - n] += 1;
+                    new_no = new Node(matriz_aux, no, new_actions, 0, no->j + 1, n, qtdMatrizNivel[(no->j+1) * n - n]);
                 }
 
                 stack->push(new_no);
