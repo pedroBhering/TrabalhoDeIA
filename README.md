@@ -21,3 +21,6 @@ Luciana Conceição Dias Campos
   - Busca Backtracking
   - Busca em Largura
   - Busca em Profundidade
+  - Busca Ordenada
+  - Busca Gulosa
+  - Busca A*
