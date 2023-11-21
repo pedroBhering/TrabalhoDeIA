@@ -121,7 +121,7 @@ void inicializaMatriz(int **matriz, int n)
 
 int inicializaMatriz(int **matriz, int n, int k)
 {
-    return n*n - k;
+    return n*n - k; // k é o número de posições já inicializadas
 }
 
 void imprimeMatriz(int **matriz, int n){

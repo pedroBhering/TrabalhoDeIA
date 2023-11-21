@@ -8,13 +8,13 @@ class Node
 {
 private:
 public:
-    int** mat;
-    Node* parent;
-    vector<int> actions;
-    int i; int j;
-    int n;
-    Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n);
-    ~Node();
+    int** mat; // a matriz naquele estado
+    Node* parent; // o pai do nó
+    vector<int> actions; // as ações possíveis para aquele estado
+    int i; int j; // a posição do 0 na matriz
+    int n; // o tamanho da matriz
+    Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n); // construtor
+    ~Node(); // destrutor
 };
 
 Node::Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n)
@@ -97,16 +97,25 @@ void imprimeMatriz(int **matriz, int n){
     }
 }
 
+void imprimeCaminho(Node* no, int n){
+    if(no->parent != nullptr){
+        imprimeCaminho(no->parent, n);
+    }
+    imprimeMatriz(no->mat, n);
+    cout << "|" << endl;
+    cout << "V" << endl;
+} // imprime o caminho da solução
+
 vector<int> preenche_regras(int** matriz, int n, int i, int j){
     if(i < n-1)
-        i++;
-    else{
+        i++; // se não estiver na última linha, incrementa i
+    else{ // se estiver na última linha, incrementa j e zera i
         i = 0; j++;
     }
 
     vector<int> rules;
 
-    for(int r = 1; r < n+1; r++){
+    for(int r = 1; r < n+1; r++){ // r é o valor que será inserido na posição ij da matriz
         bool flag = true;
 
         for(int x = 0; x < i; x++){
@@ -124,6 +133,7 @@ vector<int> preenche_regras(int** matriz, int n, int i, int j){
                 }
             }
         }
+        //pesquisa o valor em toda a linha e em toda a coluna, pois a matriz pode começar tendo valores inseridos em qualquer posição
 
         if(flag){
             rules.push_back(r);
@@ -146,27 +156,38 @@ int** clona_matriz(int **matriz, int n){
     return copy;
 }
 
-void bfs_and_dfs(int **matriz, int n){
+void bfs_and_dfs(int **matriz, int n, int busca)
+{
     int i = n-1; int j = 0;
     Stack* stack = new Stack();
     set<int**> explored;
     Node *no = new Node(matriz, nullptr, preenche_regras(matriz, n, i, j), i, j, n);
-
+    
     stack->push(no);
     
-    while(true){
+    if(busca == 1)
+    {
+        cout << "Busca em largura" << endl;
+
+        while(true){
         if(stack->is_empty()){
             cout << "Nenhuma solução encontrada" << endl;
             exit(1);
         }
 
-        no = stack->pop();
+        no = stack->popQueue();
 
         // imprimeMatriz(no->mat, n);
 
         //Encontrou solução
-        if(no->i == n-1 && no->j == n-1){
-            imprimeMatriz(no->mat, n);
+        if(no->i == n-1 && no->j == n-1)//imprimir o caminho solução
+        {
+            cout << "Solucao: " <<endl;
+            // imprimeMatriz(no->mat, n);
+            // cout << "\n\n\n\n";
+            imprimeCaminho(no, n);
+            cout << "Solucao encontrada" << endl;
+            // imprimeArvore(no, n);
             exit(0);
         }
 
@@ -198,12 +219,73 @@ void bfs_and_dfs(int **matriz, int n){
             }
         }
     }
+    }
+    else
+    {
+        cout << "Busca em profundidade" << endl;
+
+        while(true){
+        if(stack->is_empty()){
+            cout << "Nenhuma solução encontrada" << endl;
+            exit(1);
+        }
+
+        no = stack->pop();
+
+        // imprimeMatriz(no->mat, n);
+
+        //Encontrou solução
+        if(no->i == n-1 && no->j == n-1)//imprimir o caminho solução
+        {
+            cout << "Solucao: " <<endl;
+            // imprimeMatriz(no->mat, n);
+            // cout << "\n\n\n\n";
+            imprimeCaminho(no, n);
+            cout << "Solucao encontrada" << endl;
+            // imprimeArvore(no, n);
+            exit(0);
+        }
+
+        explored.insert(no->mat);
+
+        for(size_t k = 0; k < no->actions.size(); ++k){
+
+            int **matriz_aux = clona_matriz(no->mat, n);
+
+            if(no->i < n-1)
+                matriz_aux[no->i+1][no->j] = no->actions[k];
+            else
+                matriz_aux[0][no->j+1] = no->actions[k];
+
+            if(explored.count(matriz_aux) == 0){
+                Node *new_no;
+                if (no->i < n - 1)
+                {
+                    vector<int> new_actions = preenche_regras(matriz_aux, n, no->i + 1, no->j);
+                    new_no = new Node(matriz_aux, no, new_actions, no->i + 1, no->j,n);
+                }
+                else
+                {
+                    vector<int> new_actions = preenche_regras(matriz_aux, n, 0, no->j + 1);
+                    new_no = new Node(matriz_aux, no, new_actions, 0, no->j + 1,n);
+                }
+
+                stack->push(new_no);
+            }
+        }
+    }
+    }
+
 }
 
 int main(void){
     int n;
+    int busca;
     cout << "Digite o valor de n: ";
     cin >> n;
+
+    cout << "Digite a busca desejada: " << endl << "1 - BFS(Largura)" << endl << "2 - DFS(Profundidade)" << endl;
+    cin >> busca;
     
     int **matriz = new int*[n];
 
@@ -216,5 +298,5 @@ int main(void){
 
     inicializaMatriz(matriz, n);
 
-    bfs_and_dfs(matriz, n);
+    bfs_and_dfs(matriz, n, busca);
 }
