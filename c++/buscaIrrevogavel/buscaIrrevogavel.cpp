@@ -39,26 +39,25 @@ char verificaRegra(char** mat, char* vet, int n, int line , int col){
     return ' ';
 }
 
-bool R(char** mat, char c, int i, int j){
+bool R(char** mat, int* caracteresInseridos, char c, int i, int j){
     
     if(c == ' '){
         cout << "Estado de impasse" << endl;
-        cout << "Buca termina em falha" << endl;
+        cout << "Busca termina em falha" << endl;
         return false;
     }
 
-    else
+    else{
         mat[i][j] = c;
-
+        *caracteresInseridos = *caracteresInseridos + 1;
+    }
     return true;
 }
 
 
-bool verificaSol(char** mat, int n){
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
-            if(mat[i][j] == '1')
-                return false;
+bool verificaSol(int* caracteresInseridos, int n){
+        if(*caracteresInseridos < n * n)
+            return false;
     return true;
 }
 
@@ -66,10 +65,11 @@ void algoritmoIrrevogavel(char** mat, char* vet, int n){
     bool s = false;
     int line = 0;
     int col = 0;
+    int caracteresInseridos = 0;
 
-    while(!s &&  R(mat,verificaRegra(mat, vet, n, line, col), line, col)){
+    while(!s &&  R(mat, &caracteresInseridos, verificaRegra(mat, vet, n, line, col), line, col)){
         
-        if(verificaSol(mat, n)){
+        if(verificaSol(&caracteresInseridos, n)){
             s = true;
             cout << "Encotrou solucao" << endl;
         }

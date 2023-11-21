@@ -1,5 +1,6 @@
 #include <iostream>
 #include <random>
+#include <time.h>
 #include "No.h"
 
 using namespace std;
@@ -60,7 +61,6 @@ No* R(char** mat, int* i, int* j, int* caracteresInseridos, No* p, int n){
 
         else
             *i = *i - 2;
-        //cout << "\nVoltou para o pai" << endl;
         delete p;
     }
 
@@ -71,7 +71,6 @@ No* R(char** mat, int* i, int* j, int* caracteresInseridos, No* p, int n){
         *caracteresInseridos = *caracteresInseridos + 1;
         q = new No();
         q->setPai(p);
-        //cout << "\nInseriu: " << mat[*i][*j] << endl; 
     }
 
     return q;
@@ -165,6 +164,10 @@ int main(){
     algoritmoBacktracking(mat, vet, n);
 
     cout << "\nSolucao: \n";
+
+    imprimeMat(mat, n);
+
+    cout << "\nCaminho solucao:\n";
 
     for (int i = 0; i < n; i++)
         for(int j = 0; j < n; j++){
