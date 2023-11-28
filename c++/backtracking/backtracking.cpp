@@ -126,7 +126,7 @@ int getRandomNumber(int min, int max) {
 }
 
 bool verificaNum(char *vet, int n, char c){
-    for(int i = 0; i <n; i++){
+    for(int i = 0; i < n; i++){
         if(vet[i] == c)
             return false;
     }

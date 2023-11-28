@@ -230,7 +230,7 @@ void bfs_and_dfs(int **matriz, int n, int busca)
             exit(1);
         }
 
-        no = stack->pop();
+        no = stack->popQueue();
 
         // imprimeMatriz(no->mat, n);
 

@@ -118,6 +118,16 @@ void imprimeMatriz(int **matriz, int n){
     }
 }
 
+
+void imprimeCaminho(Node* no, int n){
+    if(no->parent != nullptr){
+        imprimeCaminho(no->parent, n);
+    }
+    imprimeMatriz(no->mat, n);
+    cout << "|" << endl;
+    cout << "V" << endl;
+}
+
 vector<int> preenche_regras(int** matriz, int n, int i, int j){
     // cout << "entrou" << endl;
     if(i < n-1)
@@ -217,6 +227,8 @@ void bfs_and_dfs(int **matriz, int n){
         if(no->i == n-1 && no->j == n-1){
             cout << "Solucao: " <<endl;
             imprimeMatriz(no->mat, n);
+            cout << "\nCaminho Solucao:" << endl;
+            imprimeCaminho(no, n);
             exit(0);
         }
 
