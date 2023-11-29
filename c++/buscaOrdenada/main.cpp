@@ -254,7 +254,7 @@ void ordenada(int **matriz, int n){
                     vector<int> new_actions = preenche_regras(matriz_aux, n, no->i + 1, no->j);
                     qtdMatrizNivel[no->j * n + (no->i + 1) - n] += 1;
                     peso_aresta = qtdMatrizNivel[no->j * n + (no->i + 1) - n];
-                    peso_caminho = no->parent->w_caminho + peso_aresta;
+                    peso_caminho = (no->parent != NULL) ? no->parent->w_caminho + peso_aresta : 0;
                     new_no = new Node(matriz_aux, no, new_actions, no->i + 1, no->j, n, peso_aresta, peso_caminho);
 
                 }
@@ -263,7 +263,7 @@ void ordenada(int **matriz, int n){
                     vector<int> new_actions = preenche_regras(matriz_aux, n, 0, no->j + 1);
                     qtdMatrizNivel[(no->j+1) * n - n] += 1;
                     peso_aresta = qtdMatrizNivel[(no->j+1) * n - n];
-                    peso_caminho = no->parent->w_caminho + peso_aresta;
+                    peso_caminho = (no->parent != NULL) ? no->parent->w_caminho + peso_aresta : 0;
                     new_no = new Node(matriz_aux, no, new_actions, 0, no->j + 1, n, peso_aresta, peso_caminho);
                 }
 
