@@ -14,11 +14,12 @@ public:
     int i; int j;
     int n;
     int w;
-    Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n, int w);
+    int w_caminho;
+    Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n, int w, int w_caminho);
     ~Node();
 };
 
-Node::Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n, int w)
+Node::Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n, int w, int w_caminho)
 {   
     this->n = n;
     this->mat = mat;
@@ -27,6 +28,7 @@ Node::Node(int** mat,Node* parent,vector<int> actions, int i, int j, int n, int 
     this->i = i;
     this->j = j;
     this->w = w;
+    this->w_caminho = w_caminho;
 }
 
 Node::~Node()
@@ -177,7 +179,7 @@ int** clona_matriz(int **matriz, int n){
     return copy;
 }
 
-void bfs_and_dfs(int **matriz, int n){
+void ordenada(int **matriz, int n){
     int i = n-1; int j = 0;
     Stack* stack = new Stack();
     set<int**> explored;
@@ -187,7 +189,7 @@ void bfs_and_dfs(int **matriz, int n){
     for(int k = 0; k < n * (n-1); k++)
         qtdMatrizNivel[k] = 0;
 
-    Node *no = new Node(matriz, nullptr, preenche_regras(matriz, n, i, j), i, j, n, 0);
+    Node *no = new Node(matriz, nullptr, preenche_regras(matriz, n, i, j), i, j, n, 0, 0);
     stack->push(no);
     
     while(true){
@@ -200,14 +202,14 @@ void bfs_and_dfs(int **matriz, int n){
         // stack->imprimeAbertos();
 
         if(stack->size() != 0){
-        int menor = stack->get(0)->w;
+        int menor = stack->get(0)->w_caminho;
         // cout << "menor: " << menor << endl;
         // cout << "ImprimeMatriz do menor: " << endl;
         // imprimeMatriz(stack->get(0)->mat, n);
         int pos = 0;
         for(int k = 1; k < stack->size(); k++){
-            if(menor > stack->get(k)->w){
-                menor = stack->get(k)->w;
+            if(menor > stack->get(k)->w_caminho){
+                menor = stack->get(k)->w_caminho;
                 pos = k;
 
                 }
@@ -245,18 +247,24 @@ void bfs_and_dfs(int **matriz, int n){
 
             if(explored.count(matriz_aux) == 0){
                 Node *new_no;
+                int peso_caminho = 0;
+                int peso_aresta = 0;
                 if (no->i < n - 1)
                 {   
                     vector<int> new_actions = preenche_regras(matriz_aux, n, no->i + 1, no->j);
                     qtdMatrizNivel[no->j * n + (no->i + 1) - n] += 1;
-                    new_no = new Node(matriz_aux, no, new_actions, no->i + 1, no->j, n, qtdMatrizNivel[no->j * n + (no->i + 1) - n]);
+                    peso_aresta = qtdMatrizNivel[no->j * n + (no->i + 1) - n];
+                    peso_caminho = no->parent->w_caminho + peso_aresta;
+                    new_no = new Node(matriz_aux, no, new_actions, no->i + 1, no->j, n, peso_aresta, peso_caminho);
 
                 }
                 else
                 {
                     vector<int> new_actions = preenche_regras(matriz_aux, n, 0, no->j + 1);
                     qtdMatrizNivel[(no->j+1) * n - n] += 1;
-                    new_no = new Node(matriz_aux, no, new_actions, 0, no->j + 1, n, qtdMatrizNivel[(no->j+1) * n - n]);
+                    peso_aresta = qtdMatrizNivel[(no->j+1) * n - n];
+                    peso_caminho = no->parent->w_caminho + peso_aresta;
+                    new_no = new Node(matriz_aux, no, new_actions, 0, no->j + 1, n, peso_aresta, peso_caminho);
                 }
 
                 stack->push(new_no);
@@ -281,5 +289,5 @@ int main(void){
 
     inicializaMatriz(matriz, n);
 
-    bfs_and_dfs(matriz, n);
+    ordenada(matriz, n);
 }
