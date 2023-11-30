@@ -209,7 +209,7 @@ int **clona_matriz(int **matriz, int n)
     return copy;
 }
 
-void ordenada(int **matriz, int n)
+void aEstrela(int **matriz, int n)
 {
     int i = n - 1;
     int j = 0;
@@ -333,5 +333,5 @@ int main(void)
 
     inicializaMatriz(matriz, n);
 
-    ordenada(matriz, n);
+    aEstrela(matriz, n);
 }
